@@ -9,7 +9,7 @@ public class ExcepcionesDivPorCero {
 
             int a, b;
             a = 5;
-            b = 2;
+            b = 0;
 
             // Se realiaza el try catch finally para controlar la excepcion y simplificar el codigo, 
 
