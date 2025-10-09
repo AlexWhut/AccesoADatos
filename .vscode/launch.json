@@ -1,9 +1,9 @@
 {
     "type": "java",
-    "name": "Debug EscribeNumerosDeLineas",
+    "name": "Debug ConvertirCodificacion",
     "request": "launch",
-    "mainClass": "EJercicios.EscribeNumerosDeLineas",
-    "args": "/home/whut/Desktop/GitHub/AccesoADatos/Ejemplo.txt",
+    "mainClass": "EJercicios.ConvertirCodificacion",
+    "args": "/home/whut/Desktop/GitHub/AccesoADatos/entrada_utf8.txt",
     "configurations": [
         {
             "type": "java",
