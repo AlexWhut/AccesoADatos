@@ -7,6 +7,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "PruebaFicheroAccesoAleatorio",
+            "request": "launch",
+            "mainClass": "EJercicios.PruebaFicheroAccesoAleatorio",
+            "projectName": "AccesoADatos_7c7b1995"
+        },
+        {
+            "type": "java",
             "name": "ConvertirCodificacion",
             "request": "launch",
             "mainClass": "EJercicios.ConvertirCodificacion",
