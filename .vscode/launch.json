@@ -1,0 +1,16 @@
+{
+    "type": "java",
+    "name": "Debug EscribeNumerosDeLineas",
+    "request": "launch",
+    "mainClass": "EJercicios.EscribeNumerosDeLineas",
+    "args": "/home/whut/Desktop/GitHub/AccesoADatos/Ejemplo.txt",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "EscribeNumerosDeLineas",
+            "request": "launch",
+            "mainClass": "EJercicios.EscribeNumerosDeLineas",
+            "projectName": "AccesoADatos_7c7b1995"
+        }
+    ]
+}
