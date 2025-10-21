@@ -1,4 +1,4 @@
-package EJercicios;
+package XML_JSON; // corregido el nombre del paquete
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.*;
