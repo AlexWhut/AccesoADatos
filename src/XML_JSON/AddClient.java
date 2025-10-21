@@ -32,74 +32,42 @@ public class AddClient {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(xmlFile);
 
-            // Comprobar que hay un único elemento al nivel del documento
-            NodeList topChildren = doc.getChildNodes();
-            int elemCount = 0;
-            for (int i = 0; i < topChildren.getLength(); i++) {
-                if (topChildren.item(i).getNodeType() == Node.ELEMENT_NODE) elemCount++;
-            }
-            if (elemCount != 1) {
-                System.err.println("Error: el documento debe tener exactamente un elemento raíz.");
-                return;
-            }
-
+            // Verificar que el documento tiene un único elemento raíz llamado "clientes"
             Element root = doc.getDocumentElement();
-
-            // Comprobar que el elemento raíz contiene al menos un elemento hijo (clientes existentes)
-            NodeList rootChildren = root.getChildNodes();
-            boolean hasClientElement = false;
-            Element firstClientElement = null;
-            for (int i = 0; i < rootChildren.getLength(); i++) {
-                Node n = rootChildren.item(i);
-                if (n.getNodeType() == Node.ELEMENT_NODE) {
-                    if (!hasClientElement) {
-                        firstClientElement = (Element) n;
-                    }
-                    hasClientElement = true;
-                }
-            }
-            if (!hasClientElement) {
-                System.err.println("Error: el elemento raíz no contiene elementos de cliente en el nivel superior.");
+            if (!"clientes".equals(root.getNodeName())) {
+                System.err.println("Error: el documento no tiene un único elemento raíz llamado 'clientes'.");
                 return;
             }
 
-            // Crear el nuevo elemento <cliente> con <dni>, <apellidos>, <cp>
+            // Crear el nuevo elemento <cliente> con sus hijos <DNI>, <apellidos>, <CP>
             Element newClient = doc.createElement("cliente");
+            newClient.setAttribute("DNI", dni);
 
-            Element eDni = doc.createElement("dni");
-            eDni.setTextContent(dni);
-            newClient.appendChild(eDni);
+            Element eApellidos = doc.createElement("apellidos");
+            eApellidos.setTextContent(apellidos);
+            newClient.appendChild(eApellidos);
 
-            Element eAp = doc.createElement("apellidos");
-            eAp.setTextContent(apellidos);
-            newClient.appendChild(eAp);
+            Element eCP = doc.createElement("CP");
+            eCP.setTextContent(cp);
+            newClient.appendChild(eCP);
 
-            Element eCp = doc.createElement("cp");
-            eCp.setTextContent(cp);
-            newClient.appendChild(eCp);
+            // Insertar el nuevo cliente al principio de la lista de clientes
+            Node firstClient = root.getFirstChild();
+            root.insertBefore(newClient, firstClient);
 
-            // Insertar antes del primer cliente existente
-            root.insertBefore(newClient, firstClientElement);
-
-            // Serializar a System.out con Transformer (formateado)
+            // Serializar el documento actualizado a la salida estándar
             TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer t = tf.newTransformer();
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
-            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            // intentos para establecer cantidad de indentación (según implementación)
-            try {
-                t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            } catch (IllegalArgumentException ignored) {}
-            try {
-                t.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "2");
-            } catch (IllegalArgumentException ignored) {}
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
-            DOMSource src = new DOMSource(doc);
-            StreamResult res = new StreamResult(System.out);
-            t.transform(src, res);
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(System.out);
+            transformer.transform(source, result);
 
         } catch (Exception e) {
-            System.err.println("Error al procesar el XML: " + e.getMessage());
+            System.err.println("Error al procesar el archivo XML: " + e.getMessage());
             e.printStackTrace();
         }
     }
