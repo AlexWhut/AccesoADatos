@@ -1,37 +1,8 @@
 {
     "type": "java",
-    "name": "Debug ConvertirCodificacion",
+    "name": "Debug DOMParser",
     "request": "launch",
-    "mainClass": "EJercicios.ConvertirCodificacion",
-    "args": "/home/whut/Desktop/GitHub/AccesoADatos/entrada_utf8.txt",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "FicheroAccesoAleatorio",
-            "request": "launch",
-            "mainClass": "EJercicios.FicheroAccesoAleatorio",
-            "projectName": "AccesoADatos_7c7b1995"
-        },
-        {
-            "type": "java",
-            "name": "PruebaFicheroAccesoAleatorio",
-            "request": "launch",
-            "mainClass": "EJercicios.PruebaFicheroAccesoAleatorio",
-            "projectName": "AccesoADatos_7c7b1995"
-        },
-        {
-            "type": "java",
-            "name": "ConvertirCodificacion",
-            "request": "launch",
-            "mainClass": "EJercicios.ConvertirCodificacion",
-            "projectName": "AccesoADatos_7c7b1995"
-        },
-        {
-            "type": "java",
-            "name": "EscribeNumerosDeLineas",
-            "request": "launch",
-            "mainClass": "EJercicios.EscribeNumerosDeLineas",
-            "projectName": "AccesoADatos_7c7b1995"
-        }
-    ]
+    "mainClass": "XML_JSON.DOMParser",
+    "args": "C:/Users/whutc/Desktop/GitHub/Ejemplo.xml",
+    "projectName": "AccesoADatos_7c7b1995"
 }

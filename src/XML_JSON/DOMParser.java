@@ -1,139 +1,135 @@
-package XML_JSON; // corregido el nombre del paquete
-import javax.xml.parsers.DocumentBuilder;
+package XML_JSON;
+// Parsing DOM y visualización de documento DOM generado
+
+import java.io.File;
+import java.io.PrintStream;
+import java.io.FileNotFoundException;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.*;
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.SAXException;
 
 public class DOMParser {
-    public static void main(String[] args) {
-        // Depuración: imprimir working dir y contenido de algunas carpetas
-        System.out.println("Working dir: " + new File(".").getAbsolutePath());
-        File projSrc = new File("AccesoADatos\\src");
-        System.out.println("AccesoADatos\\src exists: " + projSrc.exists());
-        if (projSrc.exists()) {
-            for (File f : projSrc.listFiles()) {
-                System.out.println("  " + f.getName());
+
+    // Constante para definir la cadena que se usará para la indentación en la salida.
+    private static final String INDENT_NIVEL = "  ";
+
+    /**
+     * Método recursivo que recorre el árbol DOM y muestra información de cada nodo.
+     * @param nodo El nodo actual a procesar.
+     * @param nivel La profundidad actual en el árbol, usada para la indentación.
+     * @param ps El stream de salida donde se imprimirá la información (ej. System.out).
+     */
+    public static void muestraNodo(Node nodo, int nivel, PrintStream ps) {
+        // --- FILTRO DE NODOS DE TEXTO VACÍOS ---
+        // Los parsers DOM a menudo crean nodos de texto para los espacios en blanco
+        // y saltos de línea del fichero XML original. Este bloque los ignora
+        // para mantener la salida limpia.
+        if (nodo.getNodeType() == Node.TEXT_NODE) {
+            String text = nodo.getNodeValue();
+            // Si el texto, después de quitarle los espacios en blanco, está vacío,
+            // no procesamos más este nodo.
+            if (text.trim().length() == 0) {
+                return;
             }
         }
-        
-        String inputXml = (args.length > 0) ? args[0] : "Ejemplo.xml";
-        // intentar localizar el fichero: ruta dada, algunas rutas conocidas y búsqueda recursiva
-        File inputFile = new File(inputXml);
-        if (!inputFile.exists()) {
-            File cand1 = new File("src", inputXml);
-            File cand2 = new File("AccesoADatos\\src", inputXml);
-            File cand3 = new File("AccesoADatos\\src\\EJercicios", inputXml);
-            if (cand1.exists()) {
-                inputFile = cand1;
-            } else if (cand2.exists()) {
-                inputFile = cand2;
-            } else if (cand3.exists()) {
-                inputFile = cand3;
-            } else {
-                // búsqueda recursiva desde el directorio de trabajo
-                File found = findFile(inputXml, new File("."));
-                if (found != null) {
-                    inputFile = found;
-                } else {
-                    System.err.println("Fichero no encontrado en (se intentó búsqueda recursiva):");
-                    System.err.println("  " + new File(inputXml).getAbsolutePath());
-                    System.err.println("  " + cand1.getAbsolutePath());
-                    System.err.println("  " + cand2.getAbsolutePath());
-                    System.err.println("  " + cand3.getAbsolutePath());
-                    System.err.println("Ejecuta: java EJercicios.DOMParser <ruta_al_xml>");
-                    return;
+
+        // --- INDENTACIÓN ---
+        // Imprime una cadena de indentación por cada nivel de profundidad en el árbol.
+        for (int i = 0; i < nivel; i++) {
+            ps.print(INDENT_NIVEL);
+        }
+
+        // --- PROCESAMIENTO DEL NODO SEGÚN SU TIPO ---
+        // En DOM, todo es un nodo (elementos, atributos, texto, etc.).
+        // Usamos un switch para tratar cada tipo de nodo de forma diferente.
+        switch (nodo.getNodeType()) {
+            // Caso 1: El nodo es el documento completo (la raíz del árbol DOM).
+            case Node.DOCUMENT_NODE:
+                Document doc = (Document) nodo;
+                ps.println("Documento DOM, versión: " + doc.getXmlVersion()
+                        + ", codificación: " + doc.getXmlEncoding());
+                break;
+
+            // Caso 2: El nodo es un elemento o etiqueta XML (ej: <libro>).
+            case Node.ELEMENT_NODE:
+                ps.print("<" + nodo.getNodeName());
+                // Obtenemos el mapa de atributos del elemento.
+                NamedNodeMap listaAtr = nodo.getAttributes();
+                // Recorremos e imprimimos cada atributo con su valor.
+                for (int i = 0; i < listaAtr.getLength(); i++) {
+                    Node atr = listaAtr.item(i);
+                    ps.print(" @" + atr.getNodeName() + "[" + atr.getNodeValue() + "]");
                 }
-            }
+                ps.println(">");
+                break;
+
+            // Caso 3: El nodo es el contenido de texto dentro de un elemento.
+            case Node.TEXT_NODE:
+                ps.println(nodo.getNodeName() + "[" + nodo.getNodeValue() + "]");
+                break;
+
+            // Caso por defecto: Para cualquier otro tipo de nodo (comentarios, etc.).
+            default:
+                ps.println("(nodo de tipo: " + nodo.getNodeType() + ")");
         }
 
-        // Opción A: nombre fijo
-        // String outName = "parsing_dom.txt";
+        // --- LLAMADA RECURSIVA PARA LOS NODOS HIJOS ---
+        // Obtenemos la lista de todos los nodos hijos del nodo actual.
+        NodeList nodosHijos = nodo.getChildNodes();
+        // Recorremos la lista de hijos y llamamos a este mismo método para cada uno,
+        // incrementando el nivel de profundidad. Así se recorre el árbol completo.
+        for (int i = 0; i < nodosHijos.getLength(); i++) {
+            muestraNodo(nodosHijos.item(i), nivel + 1, ps);
+        }
+    }
 
-        // Opción B: nombre con fecha/hora (habilitado)
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        String outName = "parsing_dom_" + sdf.format(new Date()) + ".txt";
+    /**
+     * Método principal que inicia el proceso de parseo del XML.
+     * @param args Argumentos de línea de comandos. Se espera que args[0] sea la ruta al fichero XML.
+     */
+    public static void main(String[] args) {
+        String nomFich;
+        // Comprueba si se ha proporcionado un nombre de fichero.
+        if (args.length < 1) {
+            System.out.println("Indicar por favor nombre de fichero");
+            return;
+        } else {
+            nomFich = args[0];
+        }
+
+        // --- CONFIGURACIÓN DEL PARSER DOM ---
+        // 1. Obtenemos una instancia de la fábrica de constructores de documentos.
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        // 2. Configuramos la fábrica para que el parser ignore los comentarios del XML.
+        dbf.setIgnoringComments(true);
+
+        // 3. Configuramos que ignore los espacios en blanco que no son significativos.
+        //    Esto es muy útil para evitar nodos de texto vacíos.
+        dbf.setIgnoringElementContentWhitespace(true);
 
         try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            // 4. Creamos un DocumentBuilder a partir de la fábrica configurada.
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(inputFile);
-            doc.getDocumentElement().normalize();
 
-            try (PrintWriter pw = new PrintWriter(new FileWriter(outName, false))) {
-                pw.println("Parseado de: " + inputXml);
-                pw.println("Fecha: " + new Date());
-                pw.println();
+            // 5. El paso más importante: parseamos el fichero XML.
+            //    Esto lee el fichero completo y lo carga en memoria como un árbol de objetos DOM.
+            Document domDoc = db.parse(new File(nomFich));
 
-                Node root = doc.getDocumentElement();
-                printNode(root, pw, 0);
-            }
+            // 6. Iniciamos el recorrido y la visualización del árbol desde su raíz (el documento).
+            muestraNodo(domDoc, 0, System.out);
 
-            System.out.println("Salida escrita en: " + outName);
+            // Capturamos las excepciones más comunes durante el parseo.
+        } catch (FileNotFoundException | ParserConfigurationException | SAXException e) {
+            System.err.println(e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
-    private static void printNode(Node node, PrintWriter pw, int indent) {
-        // compatibilidad Java 8: construir la sangría manualmente
-        StringBuilder sbPad = new StringBuilder();
-        for (int i = 0; i < Math.max(0, indent); i++) {
-            sbPad.append("  ");
-        }
-        String pad = sbPad.toString();
-        switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-                pw.print(pad + "<" + node.getNodeName());
-                NamedNodeMap attrs = node.getAttributes();
-                if (attrs != null) {
-                    for (int i = 0; i < attrs.getLength(); i++) {
-                        Node a = attrs.item(i);
-                        pw.print(" " + a.getNodeName() + "=\"" + a.getNodeValue() + "\"");
-                    }
-                }
-                pw.println(">");
-
-                NodeList children = node.getChildNodes();
-                for (int i = 0; i < children.getLength(); i++) {
-                    printNode(children.item(i), pw, indent + 1);
-                }
-
-                pw.println(pad + "</" + node.getNodeName() + ">");
-                break;
-
-            case Node.TEXT_NODE:
-                String text = node.getTextContent().trim();
-                if (!text.isEmpty()) {
-                    pw.println(pad + text);
-                }
-                break;
-
-            case Node.COMMENT_NODE:
-                pw.println(pad + "<!-- " + node.getNodeValue() + " -->");
-                break;
-
-            default:
-                // otros tipos (CDATA_SECTION_NODE, etc.)
-                break;
-        }
-    }
-
-    // busca recursivamente un fichero por nombre comenzando en startDir (Java 8 compatible)
-    private static File findFile(String name, File startDir) {
-        if (startDir == null || !startDir.exists()) return null;
-        File[] list = startDir.listFiles();
-        if (list == null) return null;
-        for (File f : list) {
-            if (f.isDirectory()) {
-                File found = findFile(name, f);
-                if (found != null) return found;
-            } else if (f.getName().equalsIgnoreCase(name)) {
-                return f;
-            }
-        }
-        return null;
-    }
 }
+
