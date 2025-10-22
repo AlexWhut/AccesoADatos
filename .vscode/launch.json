@@ -1,8 +1,11 @@
 {
     "type": "java",
-    "name": "Debug DOMParser",
+    "name": "Debug MainInventario",
     "request": "launch",
-    "mainClass": "XML_JSON.DOMParser",
-    "args": "C:/Users/whutc/Desktop/GitHub/Ejemplo.xml",
-    "projectName": "AccesoADatos_7c7b1995"
+    "mainClass": "XML_JSON.JSON.MainInventario",
+    "classPaths": [
+        "lib/jackson-databind-2.15.2.jar",
+        "lib/jackson-core-2.15.2.jar",
+        "lib/jackson-annotations-2.15.2.jar"
+    ]
 }
