@@ -7,20 +7,45 @@ import java.io.IOException;
 public class EscribeNumerosDeLineas {
     public static void main(String[] args) {
 
-        // Ruta del archivo
-        String nombreArchivo = "/home/whut/Desktop/GitHub/AccesoADatos/Ejemplo.txt";
+        if (args.length == 0) {
+            System.out.println("PRUEBA1");
+            return;
+        }
+
+        String textoBuscar = args[0];
+        if (textoBuscar.isEmpty()) {
+            System.out.println("El texto a buscar no puede estar vacío.");
+            return;
+        }
+
+        // Ruta por defecto si no se pasa como argumento
+        String nombreArchivo = (args.length >= 2)
+                ? args[1]
+                : "/home/whut/Desktop/GitHub/AccesoADatos/Ejemplo.txt";
+
+        int numeroLinea = 1;
+        int totalApariciones = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
             String linea;
-            int numeroLinea = 1;
             while ((linea = br.readLine()) != null) {
-                System.out.println(numeroLinea + ": " + linea);
+                int desde = 0;
+                while (true) {
+                    int idx = linea.indexOf(textoBuscar, desde);
+                    if (idx == -1) break;
+                    // columna 1-based
+                    System.out.println("Línea " + numeroLinea + ", columna " + (idx + 1) + ": " + linea);
+                    totalApariciones++;
+                    // avanzar para permitir solapamientos
+                    desde = idx + 1;
+                }
                 numeroLinea++;
             }
+            System.out.println("Total apariciones: " + totalApariciones);
         } catch (IOException e) {
             System.out.println("Ocurrió un error al leer el archivo: " + e.getMessage());
         } finally {
-            System.out.println("Finalizando la lectura de líneas.");
+            System.out.println("Finalizando la búsqueda.");
         }
     }
 }
